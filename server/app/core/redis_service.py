@@ -175,7 +175,6 @@ class RedisServer:
                         )
         except RedisError as e:
             logger.error(f"Redis error: {e}")
-            # Try to reconnect and restart listener
             if await self.reconnect():
                 return await self.start_message_listener()
             return False
@@ -200,7 +199,7 @@ class RedisServer:
                     await self.disconnect()
                     await asyncio.sleep(retry_delay)
 
-                    # Use auto_reconnect=False to prevent infinite recursion
+                    # auto_reconnect=False to prevent infinite recursion
                     if await self.connect(auto_reconnect=False):
                         # Resubscribe to channels
                         if self.subscribers:

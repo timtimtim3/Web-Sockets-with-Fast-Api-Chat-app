@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     redis_host: str = Field(default="redis", description="redis host")
     redis_port: int = Field(default=6379, description="redis port")
     redis_db: int = Field(default=1, description="redis db name")
+    redis_tls: bool = Field(default=False, description="use TLS for redis")
 
 
 settings = Settings()

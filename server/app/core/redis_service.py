@@ -1,4 +1,5 @@
 from typing import Optional, Dict, Callable
+from redis.asyncio.connection import SSLConnection
 import redis.asyncio as redis
 from core.config import settings
 from core.logger import logger
@@ -18,15 +19,23 @@ class RedisServer:
 
     async def connect(self, auto_reconnect: bool = True):
         try:
-            self.pool = redis.ConnectionPool(
+            # Base connection arguments
+            pool_kwargs = dict(
                 host=settings.redis_host,
                 port=settings.redis_port,
                 db=settings.redis_db,
-                # password = REDIS_PASSWORD
                 max_connections=50,
-                socket_timeout=None,  # No timeout for pubsub connections
+                socket_timeout=None,
                 socket_connect_timeout=5,
             )
+
+            # Enable TLS if configured
+            if settings.redis_tls:
+                pool_kwargs["connection_class"] = SSLConnection
+
+            # Create connection pool
+            self.pool = redis.ConnectionPool(**pool_kwargs)
+
             self.redis_client = redis.Redis(
                 connection_pool=self.pool,
                 decode_responses=True,

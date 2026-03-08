@@ -8,6 +8,7 @@ import type {
   Message,
   WebSocketMessage,
 } from "../types/conversations-types";
+import { WS_BASE_URL } from "../config";
 
 export const useWebSocket = (): UseWebSocketReturn => {
   const ws = useRef<WebSocket | null>(null);
@@ -44,8 +45,7 @@ export const useWebSocket = (): UseWebSocketReturn => {
     setError(null);
 
     // ws connection - use same origin as frontend
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsURL = `${protocol}//${window.location.host}/ws`;
+    const wsURL = `${WS_BASE_URL}/ws`;
     console.log("WebSocket: Connecting to", wsURL);
 
     try {

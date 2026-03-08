@@ -1,6 +1,8 @@
 import axios, { AxiosError } from "axios";
+import api from "./axios";
 import type { FriendsProfile } from "../types/friends-types";
 import store from "../store/store";
+
 export interface ApiError {
   message?: string;
   detail?: string;
@@ -11,7 +13,7 @@ export async function getFriends() {
     if (!token) {
       throw new Error("Authentication required. Please log in.");
     }
-    const response = await axios.get<FriendsProfile[]>("/friends/allfriends", {
+    const response = await api.get<FriendsProfile[]>("/friends/allfriends", {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
@@ -33,7 +35,7 @@ export async function getPeopleYouMayKnow() {
     if (!token) {
       throw new Error("Authentication required. Please log in.");
     }
-    const response = await axios.get<FriendsProfile[]>(
+    const response = await api.get<FriendsProfile[]>(
       "/friends/peopleyoumayknow",
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -58,7 +60,7 @@ export async function getFriendRequests() {
     if (!token) {
       throw new Error("Authentication required. Please log in.");
     }
-    const response = await axios.get<FriendsProfile[]>(
+    const response = await api.get<FriendsProfile[]>(
       "/friends/friendrequests",
       {
         headers: { Authorization: `Bearer ${token}` },

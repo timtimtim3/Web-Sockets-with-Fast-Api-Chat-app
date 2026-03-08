@@ -3,7 +3,8 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
+import api from "../../api/axios";
 import { initialState } from "../../types/auth-types";
 import type {
   User,
@@ -19,7 +20,7 @@ export const RegisterUser = createAsyncThunk<
   { rejectValue: string }
 >("/auth/register", async (formData, thunkAPI) => {
   try {
-    const response = await axios.post("/auth/register", formData, {
+    const response = await api.post("/auth/register", formData, {
       withCredentials: true,
     });
     return response.data;
@@ -40,7 +41,7 @@ export const loginUser = createAsyncThunk<
     params.append("username", formData.username);
     params.append("password", formData.password);
 
-    const loginResponse = await axios.post<AuthResponse>(
+    const loginResponse = await api.post<AuthResponse>(
       "/auth/token",
       params,
       {
@@ -51,7 +52,7 @@ export const loginUser = createAsyncThunk<
       }
     );
     const token = loginResponse.data?.access_token;
-    const userResponse = await axios.get<User>("/auth/me", {
+    const userResponse = await api.get<User>("/auth/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -74,7 +75,7 @@ export const refreshAccessToken = createAsyncThunk<
   { rejectValue: string }
 >("auth/refresh", async (_, thunkAPI) => {
   try {
-    const response = await axios.post<AuthResponse>(
+    const response = await api.post<AuthResponse>(
       "/auth/refresh",
       {},
       {
@@ -106,7 +107,7 @@ export const checkAuth = createAsyncThunk<User, void, { rejectValue: string }>(
         }
       }
 
-      const response = await axios.get<User>(`/auth/me`, {
+      const response = await api.get<User>(`/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -125,7 +126,7 @@ export const checkAuth = createAsyncThunk<User, void, { rejectValue: string }>(
 
 // Logout user
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
-  await axios.post(
+  await api.post(
     "/auth/logout",
     {},
     {

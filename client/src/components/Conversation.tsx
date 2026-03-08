@@ -46,7 +46,6 @@ const Conversation: React.FC = () => {
   const {
     isAuthenticated,
     user,
-    error: wsError,
     sendMessage,
     message: wsMessages,
     connectionStatus,

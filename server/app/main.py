@@ -20,6 +20,7 @@ origins = [
     "http://127.0.0.1:5174",
     "http://localhost:8000",  # FastAPI docs
     "http://127.0.0.1:8000",  # FastAPI server
+    "http://chatapp-frontend-s3-593521254465.s3-website.eu-central-1.amazonaws.com",
 ]
 
 

@@ -1,0 +1,109 @@
+KUBERNETES
+
+
+# Apply a yaml config:
+kubectl apply -f k8s/local/namespace.yaml
+kubectl get ns
+
+# Postgres:
+kubectl apply -f k8s/local/postgres-deployment.yaml
+kubectl apply -f k8s/local/postgres-service.yaml
+
+# Check:
+kubectl get pods -n chatapp
+kubectl get svc -n chatapp
+
+# Redis:
+kubectl apply -f k8s/local/redis-deployment.yaml
+kubectl apply -f k8s/local/redis-service.yaml
+
+
+# With statefull, instead do:
+kubectl apply -f k8s/local/namespace.yaml
+kubectl apply -f k8s/local/postgres-service.yaml
+kubectl apply -f k8s/local/postgres-statefulset.yaml
+kubectl apply -f k8s/local/redis-service.yaml
+kubectl apply -f k8s/local/redis-statefulset.yaml
+
+# Check:
+kubectl get all -n chatapp
+kubectl get pvc -n chatapp
+
+
+
+# Build backend image for kind:
+docker build -t chat-backend:local -f ./server/Dockerfile .
+
+# docker build
+     │
+     ├─ -t chat-backend:local  → image name (tag)
+     ├─ -f ./server/Dockerfile → Dockerfile location
+     └─ .                      → build context
+
+# Load it in:
+kind load docker-image chat-backend:local
+
+# Apply backend:
+kubectl apply -f k8s/local/backend-deployment.yaml
+kubectl apply -f k8s/local/backend-service.yaml
+
+# Check:
+kubectl get pods -n chatapp
+kubectl get svc -n chatapp
+
+# Check logs if fails:
+kubectl logs -n chatapp deployment/backend
+
+# Specific container:
+kubectl logs backend-7476664d9d-xmvjf -n chatapp
+
+# Watch rollout:
+kubectl rollout status deployment/backend -n chatapp
+
+# Or inspect pod:
+kubectl get pods -n chatapp
+kubectl describe pod <backend-pod-name> -n chatapp
+kubectl logs <backend-pod-name> -n chatapp
+
+# Test backend locally:
+# Port forward it to local
+kubectl port-forward svc/backend 8000:8000 -n chatapp
+
+# Call it:
+curl http://localhost:8000/docs
+
+
+
+
+# Install ingress-nginx in kind
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+# Wait for it:
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=180s
+
+# Check:
+kubectl get pods -n ingress-nginx
+
+# Port forward ingress:
+kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
+
+# Local endpoint:
+http://localhost:8080
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -90,12 +90,89 @@ kubectl get pods -n ingress-nginx
 # Port forward ingress:
 kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
 
+# add
+127.0.0.1 chatapp.local
+
+# to
+C:\Windows\System32\drivers\etc\hosts
+
 # Local endpoint:
-http://localhost:8080
+http://chatapp.local:8080
+
+
+######
+Big Picture: What this Ingress rule does
+
+This config tells the Ingress controller (NGINX):
+
+When a request comes to chatapp.local, route traffic to different services depending on the URL path.
+
+So the traffic flow becomes:
+
+Browser
+   ↓
+chatapp.local
+   ↓
+Ingress Controller (nginx)
+   ↓
+Service (backend)
+   ↓
+Backend Pods (3 replicas)
+
+Ingress is basically the Kubernetes equivalent of your old NGINX reverse proxy.
+
+# You can see the routing graphically:
+kubectl get ingress -n chatapp
+kubectl describe ingress chatapp-ingress -n chatapp
+
+# We have:
+/auth/*
+/friends/*
+/messages/*
+/ws
+
+# Visualization of the final local cluster:
+Browser
+   ↓
+Ingress (nginx)
+   ↓
+   ├── / → frontend-service
+   │        ↓
+   │     frontend pod (nginx)
+   │        ↓
+   │     index.html + JS
+   │
+   ├── /auth → backend-service
+   ├── /friends → backend-service
+   ├── /messages → backend-service
+   └── /ws → backend-service
+            ↓
+         FastAPI pods (3)
+            ↓
+         postgres + redis
 
 
 
 
+# Build frontend nginx image so we can use for k8 container
+docker build -t chat-frontend:local -f ./client/Dockerfile.k8s ./client
+kind load docker-image chat-frontend:local
+
+# (Re-)apply:
+kubectl apply -f k8s/local/frontend-deployment.yaml
+kubectl apply -f k8s/local/frontend-service.yaml
+kubectl apply -f k8s/local/ingress.yaml
+
+# Check:
+kubectl get pods -n chatapp
+kubectl get svc -n chatapp
+kubectl get ingress -n chatapp
+
+# If ingress controller is port-forwarded on 8080, and hosts file has:
+127.0.0.1 chatapp.local
+
+# Then open/curl:
+http://chatapp.local:8080
 
 
 

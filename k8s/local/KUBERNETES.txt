@@ -202,6 +202,67 @@ kubectl rollout status deployment/frontend -n chatapp
 
 
 
+# Horizontal Pod Autoscaling (HPA)
+
+# install metrics server
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+# patch for local:
+kubectl patch deployment metrics-server -n kube-system \
+  --type='json' \
+  -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+
+# check:
+kubectl get pods -n kube-system
+kubectl top nodes
+kubectl top pods -n chatapp
+
+# Update backend yaml with resources, requests, limits, cpu, memory section…
+# Reapply
+kubectl apply -f k8s/local/backend-deployment.yaml
+kubectl rollout status deployment/backend -n chatapp
+
+# apply the HPA
+kubectl apply -f k8s/local/backend-hpa.yaml
+kubectl get hpa -n chatapp
 
 
+
+
+
+# Generate load: Now we need traffic.
+# A simple approach is to use a temporary load pod inside the cluster.
+kubectl run -n chatapp load-generator --rm -it --image=busybox -- /bin/sh
+
+# Then inside it:
+while true; do wget -q -O- http://backend:8000/docs > /dev/null; done
+
+# if exited, re-enter like this:
+kubectl exec -it -n chatapp load-generator -- /bin/sh
+
+# exit:
+CTRL + C
+exit
+# then, delete:
+kubectl delete pod load-generator -n chatapp
+
+# Watch autoscaling happen: In another terminal:
+kubectl get hpa -n chatapp -w
+
+# and:
+kubectl get pods -n chatapp -w
+
+# You should eventually see:
+# CPU utilization rise
+# HPA increase desired replicas
+# new backend pods created
+
+# Check metrics:
+kubectl top pods -n chatapp
+
+# Check HPA details:
+kubectl describe hpa backend-hpa -n chatapp
+
+# Check deployment scaling:
+kubectl get deployment backend -n chatapp
 

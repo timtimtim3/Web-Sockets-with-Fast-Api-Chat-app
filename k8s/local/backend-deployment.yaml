@@ -40,6 +40,13 @@ spec:
               value: "1"
             - name: SECRET_KEY
               value: "very-secret-key-here"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           readinessProbe:
             tcpSocket:
               port: 8000

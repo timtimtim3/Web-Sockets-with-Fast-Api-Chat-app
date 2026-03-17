@@ -12,7 +12,7 @@ RUN npm install
 COPY . .
 
 # Build the frontend (/dist)
-RUN npm run build
+RUN npm run build -- --mode dev
 
 # Use nginx image
 FROM nginx:alpine

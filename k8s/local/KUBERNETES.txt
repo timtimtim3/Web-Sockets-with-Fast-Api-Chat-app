@@ -1,5 +1,11 @@
 KUBERNETES
 
+# Fix for unset bug:
+kind export kubeconfig --name kind
+
+
+
+
 
 # Apply a yaml config:
 kubectl apply -f k8s/local/namespace.yaml
@@ -177,6 +183,21 @@ http://chatapp.local:8080
 
 
 
+# Local Manual Rolling Updates
+
+# Backend changes
+# After editing backend code:
+docker build -t chat-backend:local -f ./server/Dockerfile .
+kind load docker-image chat-backend:local
+kubectl rollout restart deployment/backend -n chatapp
+kubectl rollout status deployment/backend -n chatapp
+
+# Frontend changes
+# After editing frontend config/code:
+docker build -t chat-frontend:local -f ./client/Dockerfile.k8s ./client
+kind load docker-image chat-frontend:local
+kubectl rollout restart deployment/frontend -n chatapp
+kubectl rollout status deployment/frontend -n chatapp
 
 
 
